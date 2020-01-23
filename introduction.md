@@ -14,7 +14,7 @@ How to make M2 not load unnecessary entities all over again?
 
 You must request the information about this entity separately. This cannot be done using only HTML generated on server because after it is cached the information cannot be separated. HTML is just a presentation of the entity information. We cannot find the exact place in the generated HTML where one or another entity was changed and invalidate exactly its part of markdown. This means that we cannot achieve effective caching by only implementing SSR even using the "Full Page Cache" mechanism. 
 
-<!-- To be continued... -->
+### Info bellow is irrelevant for now
 
 Any sorts of AJAX requests (REST API, GraphQL) solves this issue by sharding (separating) entities from each other. This way M2 only invalidates and regenerates the responses related to changed entity (not loading the unchanged ones). This is why requesting information on a page is more effective than 
 
