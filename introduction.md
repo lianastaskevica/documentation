@@ -16,13 +16,13 @@ You must request the information about this entity separately. This cannot be do
 
 In order not to load the whole HTML all over again we must communicate with the server with the separate entities. Those entities can be presented in different formats, e.g. XML, JSON. To communicate by sharing the information (not presentation like HTML), the server must have any kind of API (Application Programming Interface). The API can be implemented in different ways, e.g. REST API (JSON), SOAP API (XML), GraphQL (JSON). 
 
-The method of communication with the server with API is called AJAX (Asynchronious Javascript and XML). With the AJAX methodology the information is retreived from the server, then passed to the algorithm on client (in browser), which generates the HTML. There could be multiple separate AJAX requests, e.g. product, category, user, etc. Each request can be separately cached on the server. This approach when done for all the data on the page is called Client-Side Rendering (CSR). 
+The method of communication with the server with API is called AJAX (Asynchronous Javascript and XML). With the AJAX methodology the information is retrieved from the server, then passed to the algorithm on client (in browser), which generates the HTML. There could be multiple separate AJAX requests, e.g. product, category, user, etc. Each request can be separately cached on the server. This approach when done for all the data on the page is called Client-Side Rendering (CSR). 
 
 ### Can we implement CSR in M2?
 
-Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support + full REST API support. However, the default Magento theme is still mostly SSR. In places like checkout and cart, AJAX requests are used. They optimize and enhanse the user experience on those pages. 
+Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support + full REST API support. However, the default Magento theme is still mostly SSR. In places like checkout and cart, AJAX requests are used. They optimize and enhance the user experience on those pages. 
 
-To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout / template system](). We need to implement a solution which will be capable of working in browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
+To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout / template system](). We need to implement a solution that will be capable of working in the browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
 
 ## How does ScnadiPWA implement CSR?
 
