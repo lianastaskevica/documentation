@@ -24,20 +24,16 @@ Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support + full RES
 
 To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout / template system](). We need to implement a solution that will be capable of working in the browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
 
+
 ## How does ScnadiPWA implement CSR?
 
+ScandiPWA does not support Magento layout / template system. Therefore, we need a substitution to it but in the client's browser. ScandiPWA uses React as a base for its FE because it is the most popular library for modern user interface (UI) development. React is a library which allows for a more effective page rendering. Instead of changing the whole page, React compares the expected representation of the page with the current one and applies the changes only to the exact part that was changed. 
+
+As an API implementation ScandiPWA uses GraphQL. Firstly, GraphQL was initially chosen to be used by Magento themselves. Secondly, it is a development-friendly tool. Let me explain why. In its essence, GraphQL is a language that allows you to communicate with the server throughout only one endpoint, by pointing on such fields that you want the server to provide an information about. 
+
+By rewriting (by implementing features present in) the M2 FE using the new technology stack like React and QraphQL as well as using the AJAX methodology, we can implement a CSR on the website. 
 
 
-### Info bellow is irrelevant for now
+## Which benefits does PWA bring? 
 
-Any sorts of AJAX requests (REST API, GraphQL) solves this issue by sharding (separating) entities from each other. This way M2 only invalidates and regenerates the responses related to a modified entity (not loading the unchanged ones). This is why requesting information on a page is more effective than 
-
-> **Problem**: Each time a new page is loaded Magento loads all necessary scripts and assets (resources) for it. Also, the animation between pages is impossible. This is because Magento is by definition server-side rendered (**SSR**). 
-
-The ScnadiPWA is client-side rendered. What does it mean? 
-
-1. We do not load page each time you transition between them. This means that all assets and scripts are loaded only once during the first-page visit. 
-
-> **Problem**: If the page static assets (CSS, JS)   loaded only once, how can we implement the mechanism of invalidating them? E.g., if the JS logic has been changed, how can we update the assets on the page? 
-
-Magento has a built-in mechanism for that - static content versioning. This allows browsers to 
+PWA stands for Progressive Web Applications. PWA allows you to have one source code for all the platforms like web-browsers, Android and iOS applications, and PCs. This makes targeting new audience cheaper. Additionally, PWA solution brings you the ability of the offline browsing and the possibility to install the applicationg to your homepage directly from the browser. 
