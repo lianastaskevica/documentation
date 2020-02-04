@@ -1,4 +1,4 @@
-# Introduction to ScnadiPWA Tech Stack 
+# Introduction to ScandiPWA Tech Stack 
 
 ## How Magento 2 (M2) frontend (FE) works
 
