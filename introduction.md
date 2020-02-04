@@ -4,7 +4,7 @@
 
 The first time you open a page, browser caches all its **static** assets: scripts (JS), styles (CSS) and uses markdown (HTML) returned from the server to display the content of the page. The next time you visit the same website (e.g., going from product listing page (PLP) to product description page (PDP)) the browser fetches (loads) only HTML and reuses **browser** cached assets to display content. This means that to render the page (draw the content) it requires to request the HTML from a server. 
 
-The HTML content is cached on the server. This means that for same page (e.g., PDP) the server will generate the HTML only once. Generating HTML on the server is called SSR (Server-side rendering). While generating, the server might use multiple entities - in database defined information sources (product information, user information, category, etc.). M2 is smart, it can **automatically** invalidate (purge, flush) specific HTML page caches on demand - when the entity information was changed (e.g., the product name was changed => related category and product page caches must be flushed). This mechanism is called "Full Page Cache". 
+The HTML content is cached on the server. This means that for the same page (e.g., PDP) the server will generate the HTML only once. Generating the HTML on the server is called SSR (Server-side rendering). While generating, the server might use multiple entities - in database defined information sources (product information, user information, category, etc.). M2 is smart, it can **automatically** invalidate (purge, flush) specific HTML page caches on demand - when the entity information was changed (e.g., the product name was changed => related category and product page caches must be flushed). This mechanism is called "Full Page Cache". 
 
 ### What is the problem of such solution? 
 
@@ -16,7 +16,7 @@ You must request the information about this entity separately. This cannot be do
 
 In order not to load the whole HTML all over again we must communicate with the server with the separate entities. Those entities can be presented in different formats, e.g. XML, JSON. To communicate by sharing the information (not presentation like HTML), the server must have any kind of API (Application Programming Interface). The API can be implemented in different ways, e.g. REST API (JSON), SOAP API (XML), GraphQL (JSON). 
 
-The method of communication with the server with API is called AJAX (Asynchronous Javascript and XML). With the AJAX methodology the information is retrieved from the server, then passed to the algorithm on client (in browser), which generates the HTML. There could be multiple separate AJAX requests, e.g. product, category, user, etc. Each request can be separately cached on the server. This approach when done for all the data on the page is called Client-Side Rendering (CSR). 
+The method of communication with the server with API is called AJAX (Asynchronous Javascript and XML). With the AJAX methodology the information is retrieved from the server, then passed to the algorithm on client (in browser), which generates the HTML. There could be multiple separate AJAX requests, e.g. product, category, user, etc. Each request can be separately cached on the server. When done for all the data on the page, this approach is called Client-Side Rendering (CSR). 
 
 ### Can we implement CSR in M2?
 
@@ -27,13 +27,45 @@ To implement full CSR, we need to completely rework the way how M2 approaches re
 
 ## How does ScnadiPWA implement CSR?
 
-ScandiPWA does not support Magento layout / template system. Therefore, we need a substitution to it but in the client's browser. ScandiPWA uses React as a base for its FE because it is the most popular library for modern user interface (UI) development. React is a library which allows for a more effective page rendering. Instead of changing the whole page, React compares the expected representation of the page with the current one and applies the changes only to the exact part that was changed. 
+ScandiPWA does not support the Magento layout/template system. Therefore, we need a substitution to it but in the client's browser. ScandiPWA uses React as a base for its FE because it is the most popular library for modern user interface (UI) development. React is a library that allows for a more effective page rendering. Instead of changing the whole page, React compares the expected representation of the page with the current one and applies the changes only to the exact part that was changed. 
 
-As an API implementation ScandiPWA uses GraphQL. Firstly, GraphQL was initially chosen to be used by Magento themselves. Secondly, it is a development-friendly tool. Let me explain why. In its essence, GraphQL is a language that allows you to communicate with the server throughout only one endpoint, by pointing on such fields that you want the server to provide an information about. 
+As an API implementation, ScandiPWA uses GraphQL. Firstly, GraphQL was initially chosen to be used by Magento themselves. Secondly, it is a development-friendly tool. Let me explain why. In its essence, GraphQL is a language that allows you to communicate with the server throughout only one endpoint, by pointing on such fields that you want the server to provide information about. 
 
 By rewriting (by implementing features present in) the M2 FE using the new technology stack like React and QraphQL as well as using the AJAX methodology, we can implement a CSR on the website. 
 
+The application can claim to be a Single Page Application (SPA) if every page of it can be rendered on client (in browser). 
+
+## How does SPA work?
+
+Browsers always work in the same way. When refreshing the page or typing the new URL, the browser will request the HTML from the server. From this HTML it will extract scripts and styles. 
+
+In case of "normal" SSR the behaviour above is expected. It is required for every page because we do not know what will happen when you click on a link. The HTML will be requested once again and the page will be rendered. 
+
+If your application can render any page of your website, then by going to another page within the website, you will definetily be able to render it. So the HTML request to the server will not be required. You only need to emulate (fake) the change of the URL. This can be done by manipulating the browser history.
+
+When using SPA, instead of the server, your spripts are in response of the page content. 
+
+## Which benefits does SPA bring? 
+
+First of all, you do not longer need to request the HTML for every page. This allows to make transitions between pages smooth and fast.
+
+**Why smooth?** Because now the application (SPA) is in response (controlling) the browsing - when you transition between page, we already know what page will follow up, so we can animate the transition.
+
+**Why fast?** Because the server might never know which page user is currently browsing. You do not need to wait for the server response to render the page.
+
+This allows for much better User Experience (UX). 
 
 ## Which benefits does PWA bring? 
 
-PWA stands for Progressive Web Applications. PWA allows you to have one source code for all the platforms like web-browsers, Android and iOS applications, and PCs. This makes targeting new audience cheaper. Additionally, PWA solution brings you the ability of the offline browsing and the possibility to install the applicationg to your homepage directly from the browser. 
+PWA stands for Progressive Web Applications. PWA allows you to have one source code for all the platforms like web-browsers, Android and iOS applications, and PCs. This makes targeting a new audience cheaper. Additionally, the PWA solution brings you the ability of the offline browsing and the possibility to install the application to your home page directly from the browser. 
+
+By design, PWA introduces Service Worker (SW). Service Worker is a programmable proxy. 
+
+**What is programmable proxy?** Imagine two people communicating with each other using a pipe. The pipe is a proxy. Imagine the pipe having a valve. If someone can control the valve - the pipe is now a programmable proxy. 
+
+These two people from the example above are the server and the client (browser). The SW can control the communication between them. The communication between the client and server consists from the requests and the responses to them. The SW can cache the response to the corresponding request. Later, if the same request is sent from the client, the SW can interrupt it and respond with the cached version of the response. In this situation, the request is not being proxied (sent) to the server.
+
+This feature of SW allows for offline browsing and faster responses. Instead of making round-trip to the server, we are only communicating with SW that is installed in the client's browser. 
+
+
+
