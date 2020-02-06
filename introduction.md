@@ -1,5 +1,9 @@
 # Introduction to ScandiPWA Tech Stack 
 
+The main goal of this introduction is to motivate the technology stack difference between usual Magento 2 and ScandiPWA. 
+
+To understand it you are required to be familiar with the default Magento workflow as well as basic knowledge about how browsers work. 
+
 ## How Magento 2 (M2) frontend (FE) works
 
 The first time you open a page, browser caches all its **static** assets: scripts (JS), styles (CSS) and uses markdown (HTML) returned from the server to display the content of the page. The next time you visit the same website (e.g., going from product listing page (PLP) to product description page (PDP)) the browser fetches (loads) only HTML and reuses **browser** cached assets to display content. This means that to render the page (draw the content) it requires to request the HTML from a server. 
@@ -22,7 +26,7 @@ The method of communication with the server with API is called AJAX (Asynchronou
 
 Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support + full REST API support. However, the default Magento theme is still mostly SSR. In places like checkout and cart, AJAX requests are used. They optimize and enhance the user experience on those pages. 
 
-To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout / template system](). We need to implement a solution that will be capable of working in the browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
+To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/layouts/layout-overview.html) / [template system](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/templates/template-overview.html). We need to implement a solution that will be capable of working in the browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
 
 
 ## How does ScnadiPWA implement CSR?
@@ -61,11 +65,15 @@ PWA stands for Progressive Web Applications. PWA allows you to have one source c
 
 By design, PWA introduces Service Worker (SW). Service Worker is a programmable proxy. 
 
-**What is programmable proxy?** Imagine two people communicating with each other using a pipe. The pipe is a proxy. Imagine the pipe having a valve. If someone can control the valve - the pipe is now a programmable proxy. 
+**What is a programmable proxy?** Imagine two people communicating with each other using a pipe. The pipe is a proxy. Imagine the pipe having a valve. If someone can control the valve - the pipe is now a programmable proxy. 
 
-These two people from the example above are the server and the client (browser). The SW can control the communication between them. The communication between the client and server consists from the requests and the responses to them. The SW can cache the response to the corresponding request. Later, if the same request is sent from the client, the SW can interrupt it and respond with the cached version of the response. In this situation, the request is not being proxied (sent) to the server.
+These two people from the example above are the server and the client (browser). The SW can control communication between them. The communication between the client and server consists of the requests and the responses to them. The SW can cache the response to the corresponding request. Later, if the same request is sent from the client, the SW can interrupt it and respond with the cached version of the response. In this situation, the request is not being proxied (sent) to the server.
 
 This feature of SW allows for offline browsing and faster responses. Instead of making round-trip to the server, we are only communicating with SW that is installed in the client's browser. 
 
+## Summary
 
+Magento has introduced an effective way of communicating with the server - GraphQL. This allows us to use AJAX methodology for the further implementation of CSR. 
+
+ScandiPWA is a SPA theme for Magento. It can be installed as a regular Magento theme, however, the usual layout/template system is not utilized. Instead, we are using React components to render the application. 
 
