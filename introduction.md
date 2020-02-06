@@ -16,7 +16,7 @@ Despite changing only one information entity (e.g., product name), the server wi
 
 ### How to make M2 not load unnecessary entities all over again? 
 
-You must request the information about this entity separately. This cannot be done using solely HTML generated on the server because after it is cached the information cannot be separated. HTML is just a presentation of the entity information. We cannot find the exact place in the generated HTML where one or another entity was changed and invalidate exactly its part of markdown. This means that we cannot achieve effective caching by only implementing SSR even using the "Full Page Cache" mechanism. 
+You must request the information about entities on the page separately. This cannot be done using solely HTML generated on the server because after it is cached the information cannot be separated. HTML is just a presentation of multiple entity information. We cannot find the exact place in the generated HTML where one or another entity was changed and invalidate exactly its part of markdown. This means that we cannot achieve effective caching by only implementing SSR even using the ["Full Page Cache"](https://docs.magento.com/m2/ee/user_guide/system/cache-full-page.html) mechanism. 
 
 In order not to load the whole HTML all over again we must communicate with the server with the separate entities. Those entities can be presented in different formats, e.g. XML, JSON. To communicate by sharing the information (not presentation like HTML), the server must have any kind of API (Application Programming Interface). The API can be implemented in different ways, e.g. REST API (JSON), SOAP API (XML), GraphQL (JSON). 
 
@@ -24,7 +24,7 @@ The method of communication with the server with API is called AJAX (Asynchronou
 
 ### Can we implement CSR in M2?
 
-Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support + full REST API support. However, the default Magento theme is still mostly SSR. In places like checkout and cart, AJAX requests are used. They optimize and enhance the user experience on those pages. 
+Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support. However, the default Magento theme is still mostly SSR. In places like checkout and cart, AJAX requests are used. They optimize and enhance the user experience on those pages. 
 
 To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/layouts/layout-overview.html) / [template system](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/templates/template-overview.html). We need to implement a solution that will be capable of working in the browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
 
@@ -43,25 +43,25 @@ The application can claim to be a Single Page Application (SPA) if every page of
 
 Browsers always work in the same way. When refreshing the page or typing the new URL, the browser will request the HTML from the server. From this HTML it will extract scripts and styles. 
 
-In case of "normal" SSR the behaviour above is expected. It is required for every page because we do not know what will happen when you click on a link. The HTML will be requested once again and the page will be rendered. 
+In case of SSR application, the behavior above is expected. It is required for every page because we do not know what will happen when you click on a link. The HTML will be requested once again and the page will be rendered. 
 
-If your application can render any page of your website, then by going to another page within the website, you will definetily be able to render it. So the HTML request to the server will not be required. You only need to emulate (fake) the change of the URL. This can be done by manipulating the browser history.
+If your application can render any page of your website, then by going to another page within the website, you will be able to render it. So the HTML request to the server will not be required. You only need to emulate (fake) the change of the URL. This can be done by manipulating the browser history.
 
-When using SPA, instead of the server, your spripts are in response of the page content. 
+When using SPA, instead of the server, your scripts are in response of the page content rendering. 
 
 ## Which benefits does SPA bring? 
 
-First of all, you do not longer need to request the HTML for every page. This allows to make transitions between pages smooth and fast.
+First of all, you do not longer need to request the HTML for every page. This allows for making transitions between pages smooth and fast.
 
-**Why smooth?** Because now the application (SPA) is in response (controlling) the browsing - when you transition between page, we already know what page will follow up, so we can animate the transition.
+**Why smooth?** Because now the application (SPA) is in response (controlling) of the browsing - when you transition between page, we already know what page will follow up, so we can animate the transition.
 
-**Why fast?** Because the server might never know which page user is currently browsing. You do not need to wait for the server response to render the page.
+**Why fast?** Because the server might never know which page the user is currently browsing. You do not need to wait for the server response to render the page.
 
 This allows for much better User Experience (UX). 
 
 ## Which benefits does PWA bring? 
 
-PWA stands for Progressive Web Applications. PWA allows you to have one source code for all the platforms like web-browsers, Android and iOS applications, and PCs. This makes targeting a new audience cheaper. Additionally, the PWA solution brings you the ability of the offline browsing and the possibility to install the application to your home page directly from the browser. 
+PWA stands for Progressive Web Applications. PWA allows you to have one source code for all the platforms like web-browsers, Android and iOS applications, and PCs. This makes targeting a new audience cheaper. Additionally, the PWA solution brings you the ability of offline browsing and the possibility to install the application to your home screen directly from the browser. 
 
 By design, PWA introduces Service Worker (SW). Service Worker is a programmable proxy. 
 
@@ -69,7 +69,7 @@ By design, PWA introduces Service Worker (SW). Service Worker is a programmable 
 
 These two people from the example above are the server and the client (browser). The SW can control communication between them. The communication between the client and server consists of the requests and the responses to them. The SW can cache the response to the corresponding request. Later, if the same request is sent from the client, the SW can interrupt it and respond with the cached version of the response. In this situation, the request is not being proxied (sent) to the server.
 
-This feature of SW allows for offline browsing and faster responses. Instead of making round-trip to the server, we are only communicating with SW that is installed in the client's browser. 
+This feature of SW allows for offline browsing and faster responses. Instead of making a round-trip to the server, we are only communicating with SW that is installed in the client's browser. 
 
 ## Summary
 
