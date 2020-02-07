@@ -29,7 +29,7 @@ Yes. Out of the box, Magento 2.3.x comes with partial GraphQL support. However, 
 To implement full CSR, we need to completely rework the way how M2 approaches rendering. We must get rid of [layout](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/layouts/layout-overview.html) / [template system](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/templates/template-overview.html). We need to implement a solution that will be capable of working in the browser (on client), make requests to M2 APIs, and render the information in human-readable format (in HTML). 
 
 
-## How does ScnadiPWA implement CSR?
+## How does ScandiPWA implement CSR?
 
 ScandiPWA does not support the Magento layout/template system. Therefore, we need a substitution to it but in the client's browser. ScandiPWA uses React as a base for its FE because it is the most popular library for modern user interface (UI) development. React is a library that allows for a more effective page rendering. Instead of changing the whole page, React compares the expected representation of the page with the current one and applies the changes only to the exact part that was changed. 
 
@@ -41,9 +41,9 @@ The application can claim to be a Single Page Application (SPA) if every page of
 
 ## How does SPA work?
 
-Browsers always work in the same way. When refreshing the page or typing the new URL, the browser will request the HTML from the server. From this HTML it will extract scripts and styles. 
+Browsers always work in the same way. When refreshing the page or typing the new URL, the browser will request the HTML from the server. From this HTML the browser will extract scripts and styles. 
 
-In case of SSR application, the behavior above is expected. It is required for every page because we do not know what will happen when you click on a link. The HTML will be requested once again and the page will be rendered. 
+In the case of SSR application, the behavior above is expected. It is required for every page because we do not know what will happen when you click on a link. The HTML will be requested once again and the page will be rendered. 
 
 If your application can render any page of your website, then by going to another page within the website, you will be able to render it. So the HTML request to the server will not be required. You only need to emulate (fake) the change of the URL. This can be done by manipulating the browser history.
 
