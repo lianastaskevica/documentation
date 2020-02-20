@@ -30,7 +30,7 @@ There are two main options: hybrid rendering (SSR + CSR) or pre-rendering.
 
 For the implementation of the hybrid rendering, we need either to completely overwrite the BE using the NodeJS or introduce an additional layer between your BE and FE. The pre-rendering is a standalone service with no dependencies. So, the middleware layer introduction VS keeping the single server responsible for the application rendering is another challenge of SPA.
 
-## Efficent API solution
+## How to communicate with a server?
 
 Previously the standart way of implementing the API was REST. Rest was known for its ease - you define an endpoint, and communicate with it using JSON. On large scale, however, REST is hard to master. With commonly more than 100 enpoints, it was almost impossible to remember. Additionally the data that was returned by the endpoint was often very detailed. Too big payloads required a way to request specific fields only. Multiple solutions arraised and standartization became neccessary. The GraphQL became the new standart.
 
@@ -42,4 +42,12 @@ However, if the data-integrity is compromised, the midleware could take care of 
 
 ## How to cache API calls efficently?
 
-<!-- With a good old REST API there is no issue - the communication happens via GET requests which are very easy to cache by URL key. The POST requests on other hand are mostly made for sensitive data communication. -->
+Using the REST API, there is no issue - the communication happens via GET requests that are very easy to cache by the URL key. The POST requests on the other hand are mostly made for sensitive data communication and by default they cannot be cached.
+
+GraphQL by design is using POST requests to communicate with the server. This complicates the process of caching GraphQL requests. We need a mechanism to transform the POST request into cachable GET request so we could use established tools like Varnish.
+
+In order to achive that, the persisted-query approach can be used. Initially introduced by Appolo, it's main principle is to transform a GraphQL query into a unique identifier and send the GraphQL query variables as the URL parameters. This approach **requires to additional requests**. However, **it saves the bandiwidth**, because the query body is not sent every time. Read more about how persisted-query works [here](https://github.com/scandipwa/persisted-query#usage).
+
+An alternative, less efficent, and less robust approach is to send the stringified JSON of the full GraphQL request to the server. This is how Magento 2 approaches the GraphQL caching implementation by default. Despite the simplicity, it brings the downsides like lower reliabaility - because now **the maximum URL length can be easily exceeded**. Additionally this way of communication is bandwidth heavy - the full query body is sent every time.
+
+Another, more complex way to cache data is to create an additional entity storage server (database). This storage could be later syncronized with any e-commerce BE, like, i.e. Magento 2. This approach is very popular within the backend-agnostic solutions, where the middleware server could be responsible for the database operation. The downsides are the **introduced stack complexity** and **the lack of data-integrity**. 
