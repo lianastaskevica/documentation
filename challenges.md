@@ -50,4 +50,8 @@ In order to achive that, the persisted-query approach can be used. Initially int
 
 An alternative, less efficent, and less robust approach is to send the stringified JSON of the full GraphQL request to the server. This is how Magento 2 approaches the GraphQL caching implementation by default. Despite the simplicity, it brings the downsides like lower reliabaility - because now **the maximum URL length can be easily exceeded**. Additionally this way of communication is bandwidth heavy - the full query body is sent every time.
 
-Another, more complex way to cache data is to create an additional entity storage server (database). This storage could be later syncronized with any e-commerce BE, like, i.e. Magento 2. This approach is very popular within the backend-agnostic solutions, where the middleware server could be responsible for the database operation. The downsides are the **introduced stack complexity** and **the lack of data-integrity**. 
+Another, more complex way to cache data is to create an additional entity storage server (database). This storage could be later syncronized with any e-commerce BE, like, i.e. Magento 2. This approach is very popular within the backend-agnostic solutions, where the middleware server could be responsible for the database operation. The downsides are the **introduced stack complexity** and **the lack of data-integrity**.
+
+## Summary
+
+<!-- TODO: complete doc @liana -->
