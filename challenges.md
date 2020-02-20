@@ -10,7 +10,7 @@ The SPA is capable of rendering the page on its own. It only requires the data c
 
 The multiple smaller servers (not Magento) serving the static files of the front-end only are called headless servers.
 
-### What challenge does a headless frontend bring?
+## What challenge does a headless frontend bring?
 
 Due to the SEO requirements we cannot just return static files (scripts and styles) of the application.
 
@@ -20,7 +20,7 @@ Therefore, we need to make sure the responses from the server (status codes) are
 
 As stated above, the crawlers require the complete page HTML to parse the information inside. By design, SPA is not providing this HTML immediately. It needs to initialize scripts before content becomes available to the client. This means that crawlers are not able to parse any CSR page out-of-the-box.
 
-### How to make crawlers parse the CSR pages?
+## How to make crawlers parse the CSR pages?
 
 There are two main options: hybrid rendering (SSR + CSR) or pre-rendering.
 
@@ -30,7 +30,7 @@ There are two main options: hybrid rendering (SSR + CSR) or pre-rendering.
 
 For the implementation of the hybrid rendering, we need either to completely overwrite the BE using the NodeJS or introduce an additional layer between your BE and FE. The pre-rendering is a standalone service with no dependencies. So, the middleware layer introduction VS keeping the single server responsible for the application rendering is another challenge of SPA.
 
-### Efficent API solution
+## Efficent API solution
 
 Previously the standart way of implementing the API was REST. Rest was known for its ease - you define an endpoint, and communicate with it using JSON. On large scale, however, REST is hard to master. With commonly more than 100 enpoints, it was almost impossible to remember. Additionally the data that was returned by the endpoint was often very detailed. Too big payloads required a way to request specific fields only. Multiple solutions arraised and standartization became neccessary. The GraphQL became the new standart.
 
@@ -40,6 +40,6 @@ Some languages like PHP do not support the asyncronious code execution. This mak
 
 However, if the data-integrity is compromised, the midleware could take care of the GraphQL parsing.
 
-### How to cache API calls efficently?
+## How to cache API calls efficently?
 
 <!-- With a good old REST API there is no issue - the communication happens via GET requests which are very easy to cache by URL key. The POST requests on other hand are mostly made for sensitive data communication. -->
