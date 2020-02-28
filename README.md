@@ -22,7 +22,7 @@ In case you just want to run ScandiPWA locally using your remote server as a bac
 
 **The other way to get the ScandiPWA instance** - is to contact hello@scandipwa.com. We can provide you with scalable (production grade) ScandiPWA cloud setup with or without code access, multiple environments (dev, stage, prod), support and more!
 
-If you still have questions regarding installation, please [join or community chat](https://join.slack.com/t/scandipwa/shared_invite/enQtNzE2Mjg1Nzg3MTg5LTQwM2E2NmQ0NmQ2MzliMjVjYjQ1MTFiYWU5ODAyYTYyMGQzNWM3MDhkYzkyZGMxYTJlZWI1N2ExY2Q1MDMwMTk) or open issues in [scandipwa/scandipwa-base](https://github.com/scandipwa/scandipwa-base) repository.
+If you still have questions regarding installation, please [join our community chat](https://join.slack.com/t/scandipwa/shared_invite/enQtNzE2Mjg1Nzg3MTg5LTQwM2E2NmQ0NmQ2MzliMjVjYjQ1MTFiYWU5ODAyYTYyMGQzNWM3MDhkYzkyZGMxYTJlZWI1N2ExY2Q1MDMwMTk) or open issues in [scandipwa/scandipwa-base](https://github.com/scandipwa/scandipwa-base) repository.
 
 ## Discover a theme
 
