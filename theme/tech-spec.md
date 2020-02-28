@@ -1,0 +1,1 @@
+# ScandiPWA technical specification
