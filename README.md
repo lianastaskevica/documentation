@@ -1,39 +1,398 @@
-# ScandiPWA Documentation
 
-ScandiPWA is a single page application (SPA) theme for Magento with advanced PWA capabilities.
 
-ScandiPWA is based on React and utilizes GraphQL API of Magento 2.3. The problem which our solution solves and the motivation behind the chosen technology stack can be found in the [introduction to ScandiPWA Technology Stack](./introduction.md).
+# Performance
 
-Implementing the SPA is challenging. There are multiple limitations which must be addressed when going for CSR. Find out more about [SPA application challenges](./challenges.md).
+## Table of contents
+1. Tools for performance testing
+2. Bundle optimization
+3. Dynamic reducers
+4. Code performance improvements
 
-Our solution is not the only one providing the SPA experience in the Magento ecosystem. To understand the main differences between the existing solutions, refer to [How we are different?](./existing-solutions.md) section of the documentation.
+---
 
-## Ready to try?
+## 1. Tools for performance testing
+* lighthouse
+* bundle-analyzer
 
-ScandiPWA is a theme for Magento 2. It can be [installed using composer on existing Magento instance](./setup/on-existing-m2.md).
+### 1.1. Lighthouse
+Integrated into chrome browsers, tool for running performance checks on websites - gives detailed report about required optimizations. 
+More info: https://developers.google.com/web/tools/lighthouse/
 
-Often, we do not have Magento 2 installed on our local host, or we do not want to install something manually - in that case, we have a docker setup ([for linux](./setup/docker/linux.md), [for mac](./setup/docker/mac.md), and [for windows](./setup/docker/windows.md)).
+### 1.2. Bundle Analyzer
+Shows what components are inside each Reacts generated chunk.
 
-> **Note**: we strongly recommend setting up using docker. Why? Because it allows us to exclude the environment-related issues from possible reasons when debugging & looking for solutions. There is a whole [FAQ](./setup/docker/faq.md) for most common docker-setup related issue.
+#### 1.2.1. Enabling bundle-analyzer
+Add ```@scandipwa/bundle-analyzer``` into ```package.json``` file:
+```json
+{
+    ...
+    "dependencies": {
+        "@scandipwa/m2-theme": "^0.1.4",
+        "@scandipwa/bundle-analyzer": "0.0.7",
+        ...
+    },
+    "scandipwa": {
+        ...
+        "extensions": {
+            "@scandipwa/m2-theme": true,
+            "@scandipwa/bundle-analyzer": true,
+            ...
+        },
+       ...
+    },
+    ...
+}
+```
+After enabling extension, the bundle analyzer will automatically start together with PWA app. It will run on the next available port _(Default: 8002)_.
 
-In case you would like to use docker setup in production - [see following guide](./setup/docker/production.md).
+_(Bundle analyzer will show all chunks, to know what chunks are loaded on each page you can use web browsers developer tools - Debugger or Network)_
 
-In case you just want to run ScandiPWA locally using your remote server as a back-end, please follow [this instruction](./setup/with-remote-m2.md).
+---
 
-**The other way to get the ScandiPWA instance** - is to contact hello@scandipwa.com. We can provide you with scalable (production grade) ScandiPWA cloud setup with or without code access, multiple environments (dev, stage, prod), support and more!
+## 2. Bundle optimization
+Bundle optimization - process in witch we reduce chunks size to improve page loading speed, by joining only those components into chunks that are required on request, instead of loading all of them at once.
 
-If you still have questions regarding installation, please [join our community chat](https://join.slack.com/t/scandipwa/shared_invite/enQtNzE2Mjg1Nzg3MTg5LTQwM2E2NmQ0NmQ2MzliMjVjYjQ1MTFiYWU5ODAyYTYyMGQzNWM3MDhkYzkyZGMxYTJlZWI1N2ExY2Q1MDMwMTk) or open issues in [scandipwa/scandipwa-base](https://github.com/scandipwa/scandipwa-base) repository.
+### 2.1. Splitting chunks/bundle
+Splitting chunk into smaller ones can be done in React with two commands:
+* lazy - imports component async, imports component when it is called for first time:
+```js
+...
+import { lazy } from 'react';
+...
+export const MyAccountAddressBook = lazy(() => import(
+    'Component/MyAccountAddressBook'
+));
 
-## Discover a theme
+// Or specify chunk name via 'webpackChunkName'
+export const MyAccountAddressBook = lazy(() => import(
+    /* webpackMode: "lazy", webpackChunkName: "account-address" */
+    'Component/MyAccountAddressBook'
+));
+...
+```
 
-ScandiPWA is fast, light-weight and simple to work with. We are claiming this, because we chose the technology stack on the front-end very carefully. Read more about the technologies we utilized in the [front-end technology stack](./theme/tech-stack.md).
+* Suspense - used to output fallback component while main component is still loading in:
+```js
+...
+import { Suspense } from 'react';
+...
+<Suspense fallback={ <Loader /> }>
+  <MyAccountAddressBook />
+</Suspense>
+```
 
-A lot of thought is put it the organization of the project internals. The approaches to file structure, file naming, and class naming patterns can be found in the [guide to stay organized](./theme/structure.md).
+### 2.2. Splitting
+Elements that should be moved to separate chunks for better performance:
+* **Pages** - Each page should be moved to separate chunk. _(As we shouldn't be loading components from different pages into all pages - main chunk)_
 
-There are [tools for VSCode](https://github.com/scandipwa/scandipwa-development-toolkit) and broad utility function list in the core of ScandiPWA. Read the [development guide](./theme/dev-guide.md) to speed up the development process.
+* **Sections** - You can split pages into smaller chunks to prioritize loading of one element before other.
 
-Finally, for a deep dive into the theme architecture and build configuration refer to the [technical specification](./theme/tech-spec.md).
+* **Tabs** - if page/section contains tab switching _(example: MyAccount, ProductDetails ...)_ then each tab should be moved to separate chunk, thus loading necessary data only on request.
 
-## Dive deeper into docker setup!
+* **Widgets** - as widgets can be placed into multiple places, then for best performance each widget should be placed ether in shared widget chunk _(widget)_ or in separate chunk with naming following: ```widget-{ name of widget }```, thus loading only necessary components;
+
+* **Special case utility** - utility that is uesed only in few other chunks can be moved out to seperate chunk.
+
+* **External components** - for simpler use external components can be moved to new component that utilizes lazy loading / suspense, thus allowing to use this component from one chunk.
+
+```js
+import { Suspense } from 'react';
+
+// Component/ExternalComponent
+export const ExternalComponent = lazy(() => import(
+    /* webpackChunkName: "external-{name}" */
+    'package'
+));
+
+export const renderWithDom(dom)  => {
+  <Suspense fallback={ <Loader /> }>
+    <ExternalComponent dom>
+  </Suspense>
+};
+
+export const renderWithText(text)  => {
+  <Suspense fallback={ <Loader /> }>
+    <ExternalComponent text>
+  </Suspense>
+};
+```
+
+* **Shared components outside the main chunk** - import structure should be analyzed to see what component is used where, thus allowing to move chunks that are shared only between two or three components into one new chunk.
+
+### 2.3. Import optimization
+
+#### 2.3.1. Constant imports
+When importing constants into a component the whole file will be added into chunk, thus you should be sure that a specific constant is present in the correct file.
+
+For example when possible you should use ```.config.js``` files to store constants and then import from that instead of splitting them into ```.container.js``` and ```.config.js``` files, as ```.config.js``` file by itself is smaller than ```.container.js``` it will also remove whole file from chunk.
+
+### 2.4. Small chunk merging
+You should investigate "nameless" chunks _(chunks that are automatically generated by webpack containing numeric names)_ and search for chunks with similar import data.
+Chunk merging can be done in one of the two ways:
+* Investigate similar chunks and based on content find the import that is responsible for it in the code base. Then with react lazy loading and webpack chunk naming join them.
+* Configure webpack so that smaller packages are joined together.
+
+### 2.5. Webpack optimization
+Sample of webpack configuration to optimize chunks
+```js
+optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: Infinity,
+      minSize: 30,
+      maxSize: 200,
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name(module) {
+            // get the name. E.g. node_modules/packageName/not/this/part.js
+            // or node_modules/packageName
+            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+
+            // npm package names are URL-safe, but some servers don't like @ symbols
+            return `npm.${packageName.replace('@', '')}`;
+          },
+        },
+      },
+    },
+}
+```
+---
+## 3. Dynamic reducers
+To keep up with principle of only loading what’s needed, we have created new solution for importing reducers into project.
+
+Reducers in project should be splitted into two categories:
+* <b>Static</b> - widely used between multiple components
+* <b>Dynamic</b> - used for specific cases,
+thus instead of loading all reducers in all pages you can split them so that only necessary ones are loaded via new command ```withReducers```
+```js
+...
+import { withReducers } from 'Util/DynamicReducer';
+import CategoryReducer from 'Store/Category/Category.reducer';
+...
+export default withReducers({
+    CategoryReducer
+})(connect(mapStateToProps, mapDispatchToProps)(CategoryPageContainer));
+```
+by using command withReducers the specific reducer is loaded async only when required.
+
+_(If reducer is loaded in main component then all exiting / rendered componnent will also have access to this reducer, so best practice should be loading reducers in Page containers)_
+
+---
+
+## 4. Code performance improvements
+
+### 4.1. Reduce component rendering count
+Reducing components rendering count can improve pages first time load score.
+React offers hook ```shouldComponentUpdate```.
+
+We can look at our current and new props & state and make a choice if we should move on. For example, some components may need to update only after main prop or state has changed and can ignore re-rendering from other changes.
+
+```js
+  function shouldComponentUpdate(nextProps, nextState) {
+      const { mainProp } = this.props;
+      const { mainProp = nextMainProp } = nextProps;
+
+      return mainProp !== nextMainProp;
+  }
+```
+On many cases first time load will execute ```render``` method up to eight times, this count can be reduced by performing first time load check together with last updated item check, thus reducing re-rendering count from eight to two.
+
+In many cases all other props and sates are dependent on one specific variable _(for example - product)_, in these cases you can usually perform only specific variable check, although these changes should be tested in-depth, as they can break some functionality.
+
+
+### 4.2. Avoid inline functions
+Since functions are objects in JavaScript ```({} !== {})```, the inline function will always fail the prop diff when React does a diff check.
+
+An arrow function will create a new instance of the function on each render if it's used in a JSX property. This might create a lot of work for the garbage collector.
+```js
+// Bad practice
+...
+render() {
+  return (
+    <Example onClick={(e) => { ... }}>
+  );
+}
+...
+
+// Good practice
+...
+onExampleClick = (example) => {
+  ...
+}
+
+render() {
+  return (
+    <Example onClick={this.onExampleClick}>
+  );
+}
+...
+```
+
+### 4.3. Throttling and debouncing events
+Event trigger rate is the number of times an event handler invokes in a given amount of time.
+In general, mouse clicks have lower event trigger rates compare to scrolling and mouseover. Higher event trigger rates can sometimes crash your application, but it can be controlled.
+
+#### 4.3.1. Throttling
+In a nutshell, throttling means delaying function execution. So instead of executing the event handler/function immediately, you’ll be adding a few milliseconds of delay when an event is triggered.
+#### 4.3.2. Debouncing
+Unlike throttling, debouncing is a technique to prevent the event trigger from being fired too often. 
+
+### 4.4. Avoid async call in componentWillMount
+When performing async calls in ```componentWillMount``` hook the function will lack access to refs and DOM element, instead of using this hook use alternative that will be fired after render - ```componentDidMount```.
+
+### 4.5. Avoid Props in States
+Avoid setting state values from props in constructor otherwise, you will lose linkage.
+
+### 4.6. Memorizing React components
+By using ```React.memo```, we can store component into memory and on recall will perform a shallow equal comparison of both props and context of the component based on strict equality, and based on that will ether load existing component or repopulate and re-render it.
+#### 4.6.1. useMemo hook
+Allows you to memoize expensive functions so that you can avoid calling them on every render. You simple pass in a function and an array of inputs and useMemo will only recompute the memoized value when one of the inputs has changed.
+```js
+import { useMemo } from "react"
+...
+const test = useMemo(() => expensiveComputation(parameter), [parameters]);
+```
+
+### 4.7. CSS Animations over JS Animations
+There are 3 ways of perfoming animations in web browser _(sorted by performance cost)_:
+1. CSS transitions
+2. CSS animations
+3. JavaScript
+Most modern browsers are already optimized for handling CSS animation, however js animations aren't, thus requiring creator to optimize them themself.
+
+### 4.8. Use WebWorkers to reduce main thread load
+Web Workers makes it possible to run a script operation in a web application’s background thread, separate from the main execution thread. By performing the laborious processing in a separate thread, the main thread, which is usually the UI, can run without being blocked or slowed down.
+
+In the same execution context, as JavaScript is single threaded, we will need to parallel compute. This can be achieved two ways. The first option is using pseudo-parallelism, which is based on setTimeout function. The second option is to use Web Workers.
+
+_(Although most computation / data preparation should be done on the server side (as they can be cached) there may be some exceptions in which moving some tasks to separate "thread"
+can improve main thread load.)_
+
+```js
+// Bad practice
+function sort (products) {
+  for (...)
+    for (...) {
+      const tmp = product[x];
+      product[x] = product[y];
+      product[y] = tmp;
+    }
+}
+
+...
+
+sortProducts = () => {
+    const { products } = this.state;
+
+    this.setState({
+        products: sort(products)
+    });
+}
+
+render() {
+  const { products } = this.state;
+
+  return (
+    <>
+      <Button onClick={this.sortProducts} />
+      <Products products={products}>
+    </>
+  )
+}
+
+// Good practice
+function sort (products) {
+  self.addEvenetListener('message', e=> {
+    for (...)
+      for (...) {
+        const tmp = product[x];
+        product[x] = product[y];
+        product[y] = tmp;
+      }
+    postMessage(products);
+  });
+}
+
+...
+
+componentDidMount() {
+    this.worker = new Worker('sort.worker.js');
+    
+    this.worker.addEventListener('message', event => {
+        const sortedProducts = event.data;
+        this.setState({
+            products: sortedProducts
+        })
+    });
+}
+
+sortProducts = () => {
+    const { products } = this.state;
+    this.worker.postMessage(products);
+}
+
+render() {
+  const { products } = this.state;
+
+  return (
+    <>
+      <Button onClick={this.sortProducts} />
+      <Products products={products}>
+    </>
+  )
+}
+```
+### 4.9. Lazyloading long lists
+When rendering large lists of data, it is recomended that only visible portion of elements is outputed and all other elements are loaded when viewport enters view.
+
+### 4.10. Optimize Conditional Rendering
+```js
+// Bad practice
+render() {
+  if (test === 'test') {
+    return (
+        <>
+          <A />
+          <B />
+          <C />
+        </>
+    );
+  } else {
+    return (
+        <>
+          <B />
+          <C />
+        </>
+    );
+  }
+}
+
+// Good practice
+render() {
+  return (
+      <>
+        { test === "test" && <A /> }
+        <B />
+        <C />
+      </>
+  );
+}
+```
+In the "Bad practice" example conditional operator and ```if else``` condition seems to be fine but it has a performance flaw.
+
+Each time the render function is called and the value toggles between "test" and another value, a different if else statement is executed.
+
+The diffing algorithm will run a check comparing the element type at each position. During the diffing algorithm, it seems that the A is not available and the first component that needs to be rendered is B.
+
+React will observe the positions of the elements. It seems that the components at position 1 and position 2 have changed and will unmount the components.
+
+The components B and C will be unmounted and remounted on position 1 and position 2. This is ideally not required, as these components are not changing, but still, we have to unmount and remount these components, wich is a costly operation.
+
+### 4.11. Import external resources async
+* JS
+* CSS
+* Fonts
 
 
